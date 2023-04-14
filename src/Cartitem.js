@@ -1,15 +1,21 @@
 import React from "react";
 
 class Cartitem extends React.Component {
-  constructor() {
-    super();
-    this.state = {
-      price: 999,
-      title: "Phone",
-      qty: 1,
-      img: "",
-    };
-  }
+  // testing() {
+  //   const promise = new Promise((resolve, reject) => {
+  //     setTimeout(() => {
+  //       resolve("done");
+  //     }, 5000);
+  //   });
+  //   promise.then(() => {
+  //      ? setState acts as synchronus call
+  //     this.setState({ qty: this.state.qty + 10 });
+  //     this.setState({ qty: this.state.qty + 10 });
+  //     this.setState({ qty: this.state.qty + 10 });
+
+  //     console.log("state", this.state);
+  //   });
+  // }
   increaseQuantity = () => {
     // ? type 1
     // this.setState({ qty: this.state.qty + 1 });
@@ -34,7 +40,7 @@ class Cartitem extends React.Component {
     });
   };
   render() {
-    const { price, title, qty } = this.state;
+    const { price, title, qty } = this.props.product;
     return (
       <div className="cart-item">
         <div className="left-block">
