@@ -7,11 +7,11 @@ const Cart = (props) => {
   const { products } = props;
   return (
     <div className="cart">
-      {products.map((product) => {
+      {products.map((product, index) => {
         return (
           <Cartitem
             product={product}
-            key={product.id}
+            key={index}
             onIncreaseQuantity={props.onIncreaseQuantity}
             onDecreaseQuantity={props.onDecreaseQuantity}
             handleDeleteProduct={props.handleDeleteProduct}
