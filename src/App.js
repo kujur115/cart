@@ -2,14 +2,19 @@ import Cart from "./Cart";
 import Navbar from "./Navbar";
 import React from "react";
 // import "./App.css";
-// import * as firebase from "firebase";
-import { collection, getDocs } from "firebase/firestore/lite";
-import db from "./firebase";
+// import * as firebase from "firebase/firestore";
+// import { collection, getDocs } from "firebase/firestore/lite";
+// import { firebase } from "./firebase";
+// import { onSnapshot } from "firebase/firestore";
+// import { useEffect } from "react";
+// import { firebase } from "./firebaseConfig";
+import firebase from 'firebase/compat/app'
 
 class App extends React.Component {
   constructor() {
     super();
     this.state = {
+      loading: true,
       products: [
         // {
         //   price: 999,
@@ -49,49 +54,85 @@ class App extends React.Component {
       ],
     };
   }
+
   componentDidMount() {
-    async function getProducts(db) {
-      const productsCol = collection(db, "products");
-      // console.log("productsCol", productsCol);
-      const productSnapshot = await getDocs(productsCol);
-      // console.log("productSnapshot", productSnapshot);
-      const products = productSnapshot.docs.map((doc) => doc.data());
-      // console.log("products", products);
-      return products;
-    }
-
-    getProducts(db).then((product) => {
-      console.log(product);
-      this.setState({ products: product });
-    });
-    // setInterval(() => {
-    //   console.log(product);
-    //   this.setState({ products: product });
-    // }, 1000);
-
-    // collection(db, "products")
-    //   .get()
-    //   .then((snapshot) => {
-    //     const product = snapshot.docs.map((doc) => doc.data());
-    //     this.setState = { products: product };
-    //   });
-    // firebase
-    //   .firestore()
-    //   .collection("products")
-    //   .get()
-    //   .then((snapshot) => {
-    //     console.log("snapshot", snapshot);
-
-    //     snapshot.docs.map((doc) => {
-    //       console.log(doc.data());
-    //     });
-
-    //     const products = snapshot.docs.map((doc) => doc.data());
-    // const products =
-    // console.log("products", products);
-
-    // });
+    firebase
+      .firestore()
+      .collection("products")
+      .onSnapshot(snapshot => {
+        const products = snapshot.docs.map(doc => {
+          const data = doc.data();
+          data["id"] = doc.id;
+          return data;
+        });
+        this.setState({ products: products, loading: false });
+      });
   }
+  // componentDidMount() {
+  //   // firebase.collection("products").docs.onSnapshot((snapshot) => {
+  //   //   const products = snapshot.docs.map((doc) => {
+  //   //     const data = doc.data();
+  //   //     data["id"] = doc.id;
+  //   //     return data;
+  //   //   });
+  //   //   this.setState({ products: products, loading: false });
+  //   // });
+  //   async function getProducts(db) {
+  //     const productsCol = collection(db, "products");
+  //     // console.log("productsCol", productsCol);
+  //     const productSnapshot = await getDocs(productsCol);
+  //     // const unsub = onSnapshot(productSnapshot, (doc) => {
+  //     //   console.log("Current data: ", doc.data());
+  //     // });
+  //     // console.log("productSnapshot", productSnapshot);
+  //     const products = productSnapshot.docs.map((doc) => {
+  //       const data = doc.data();
+  //       data["id"] = doc.id;
+  //       return data;
+  //     });
+  //     // console.log("products", products);
+  //     return products;
+  //   }
+
+  //   getProducts(firebase).then((product) => {
+  //     // console.log(product);
+  //     this.setState({ products: product, loading: false });
+  //   });
+
+  //   // const col=collection(db, "products");
+
+  //   // db.collection("products").doc()
+  //   // .onSnapshot((doc) => {
+  //   //     console.log("Current data: ", doc.data());
+  //   // });
+  //   // setInterval(() => {
+  //   //   console.log(product);
+  //   //   this.setState({ products: product });
+  //   // }, 1000);
+
+  //   // collection(db, "products")
+  //   //   .get()
+  //   //   .then((snapshot) => {
+  //   //     const product = snapshot.docs.map((doc) => doc.data());
+  //   //     this.setState = { products: product };
+  //   //   });
+  //   // firebase
+  //   //   .firestore()
+  //   //   .collection("products")
+  //   //   .get()
+  //   //   .then((snapshot) => {
+  //   //     console.log("snapshot", snapshot);
+
+  //   //     snapshot.docs.map((doc) => {
+  //   //       console.log(doc.data());
+  //   //     });
+
+  //   //     const products = snapshot.docs.map((doc) => doc.data());
+  //   // const products =
+  //   // console.log("products", products);
+
+  //   // });
+  // }
 
   handleIncreaseQuantity = (product) => {
     // console.log("Hey,please inc the qty of", product);
@@ -143,7 +184,7 @@ class App extends React.Component {
     return cartTotal;
   };
   render() {
-    const { products } = this.state;
+    const { products, loading } = this.state;
     return (
       <div className="App">
         <Navbar count={this.getCartCount()} />
@@ -153,6 +194,7 @@ class App extends React.Component {
           onDecreaseQuantity={this.handleDecreaseQuantity}
           handleDeleteProduct={this.handleDeleteProduct}
         />
+        {loading && <h1>Loading products ...</h1>}
         <div style={{ fontSize: 20, padding: 10 }}>
           TOTAL:{this.getCartTotal()}
         </div>

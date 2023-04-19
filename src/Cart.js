@@ -11,7 +11,7 @@ const Cart = (props) => {
         return (
           <Cartitem
             product={product}
-            key={index}
+            key={product.id}
             onIncreaseQuantity={props.onIncreaseQuantity}
             onDecreaseQuantity={props.onDecreaseQuantity}
             handleDeleteProduct={props.handleDeleteProduct}
