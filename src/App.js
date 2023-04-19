@@ -8,11 +8,12 @@ import React from "react";
 // import { onSnapshot } from "firebase/firestore";
 // import { useEffect } from "react";
 // import { firebase } from "./firebaseConfig";
-import firebase from 'firebase/compat/app'
+import firebase from "firebase/compat/app";
 
 class App extends React.Component {
   constructor() {
     super();
+    this.db = firebase.firestore();
     this.state = {
       loading: true,
       products: [
@@ -55,12 +56,14 @@ class App extends React.Component {
     };
   }
 
+  // ? function loads all the products from the db, and updates the changes in real time
   componentDidMount() {
-    firebase
-      .firestore()
+    this.db
       .collection("products")
-      .onSnapshot(snapshot => {
-        const products = snapshot.docs.map(doc => {
+      // .where("price", "<", 999)
+      // .orderBy("price", "desc")
+      .onSnapshot((snapshot) => {
+        const products = snapshot.docs.map((doc) => {
           const data = doc.data();
           data["id"] = doc.id;
           return data;
@@ -134,36 +137,68 @@ class App extends React.Component {
   //   // });
   // }
 
+  // ? increases the number of qty of product in the cart
   handleIncreaseQuantity = (product) => {
     // console.log("Hey,please inc the qty of", product);
     const { products } = this.state;
     const index = products.indexOf(product);
 
-    products[index].qty += 1;
-    this.setState({
-      products: products,
-    });
+    // products[index].qty += 1;
+    // this.setState({
+    //   products: products,
+    // });
+    const docRef = this.db.collection("products").doc(products[index].id);
+    docRef
+      .update({
+        qty: products[index].qty + 1,
+      })
+      .then(() => {
+        console.log("Updated successfully");
+      })
+      .catch((err) => {
+        console.log("Error:", err);
+      });
   };
 
+  // ? decreases the qty of the product on click
   handleDecreaseQuantity = (product) => {
     // console.log("Hey,please inc the qty of", product);
     const { products } = this.state;
     const index = products.indexOf(product);
     if (products[index].qty === 0) return;
-    products[index].qty -= 1;
-    this.setState({
-      products: products,
-    });
+    const docRef = this.db.collection("products").doc(products[index].id);
+    docRef
+      .update({
+        qty: products[index].qty - 1,
+      })
+      .then(() => {
+        console.log("Updated successfully");
+      })
+      .catch((err) => {
+        console.log("Error:", err);
+      });
   };
 
+  // ? delete the product from the cart
   handleDeleteProduct = (id) => {
-    const { products } = this.state;
-    const items = products.filter((item) => item.id !== id);
+    // const { products } = this.state;
+    // const items = products.filter((item) => item.id !== id);
 
-    this.setState({
-      products: items,
-    });
+    // this.setState({
+    //   products: items,
+    // });
+    const docRef = this.db.collection("products").doc(id);
+    docRef
+      .delete()
+      .then(() => {
+        console.log("Deleted successfully");
+      })
+      .catch((err) => {
+        console.log("Error:", err);
+      });
   };
+
+  // ? calculate number of items in the cart
   getCartCount = () => {
     const { products } = this.state;
     let count = 0;
@@ -174,6 +209,7 @@ class App extends React.Component {
     return count;
   };
 
+  // ? Calculate the Total price in the cart
   getCartTotal = () => {
     const { products } = this.state;
 
@@ -183,11 +219,66 @@ class App extends React.Component {
     });
     return cartTotal;
   };
+
+  // ? Add products function
+  addProduct = () => {
+    const products = [
+      {
+        price: 999,
+        title: "Camera",
+        qty: 1,
+        img: "https://images.unsplash.com/photo-1621985499238-698dfd45b017?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NDF8fGNhbWVyYXxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60",
+        id: 1,
+      },
+      {
+        price: 999,
+        title: "Smart Watch",
+        qty: 1,
+        img: "https://images.unsplash.com/photo-1551816230-ef5deaed4a26?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8OHx8c21hcnQlMjB3YXRjaHxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60",
+        id: 2,
+      },
+      {
+        price: 999,
+        title: "Keyboard",
+        qty: 1,
+        img: "https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MjV8fG9mZmljZXxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60",
+        id: 4,
+      },
+      {
+        price: 999,
+        title: "iPhone",
+        qty: 1,
+        img: "https://images.unsplash.com/photo-1512054502232-10a0a035d672?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NXx8aXBob25lfGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60",
+        id: 3,
+      },
+      {
+        price: 999,
+        title: "MacBook",
+        qty: 1,
+        img: "https://images.unsplash.com/photo-1595683213102-db302aa70c0f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NTB8fG1hY2Jvb2t8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60",
+        id: 5,
+      },
+    ];
+
+    products.forEach((product) => {
+      this.db
+        .collection("products")
+        .add(product)
+        .then((docRef) => {
+          console.log("product has been added".docRef);
+        })
+        .catch((err) => {
+          console.log("Error:", err);
+        });
+    });
+  };
+
   render() {
     const { products, loading } = this.state;
     return (
       <div className="App">
         <Navbar count={this.getCartCount()} />
+        {/* <button onClick={this.addProduct}>Add all product</button> */}
         <Cart
           products={products}
           onIncreaseQuantity={this.handleIncreaseQuantity}
