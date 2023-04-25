@@ -7,7 +7,7 @@ const Cart = (props) => {
   const { products } = props;
   return (
     <div className="cart">
-      {products.map((product, index) => {
+      {products.map((product) => {
         return (
           <Cartitem
             product={product}
